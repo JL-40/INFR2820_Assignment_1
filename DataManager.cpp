@@ -17,15 +17,12 @@ class DataManager {
     Product productData;
     QuickSorter sorter;
 
-    std::string GetID(const std::string& data) const;
 public:
     DataManager();
     Product Product() const {return  productData; }
     void Display() const;
-    std::string Search(const std::string& ID, bool sendMessage = true) const;
-    std::string Search(const int& ID, bool sendMessage = true) const;
-    int SearchI(const std::string& ID, bool sendMessage = true) const;
-    int SearchI(const int& ID, bool sendMessage = true) const;
+    std::vector<std::string> Search(const std::string& ID = "", const std::string& name = "", const string& price = "", const std::string& category = "", bool sendMessage = true) const;
+    std::vector<std::string> Search(const int& ID = -1, const std::string& name = "", const float& price = -1.0, const std::string& category = "", bool sendMessage = true) const;
     void Insert(const std::string& newProduct);
     void Insert(const int& ID, const std::string& name, const float& price, const std::string& category);
     void Delete(const std::string& ID);
@@ -64,92 +61,66 @@ public:
         }
     }
 
-    /// \summary Gets the ID of the product.
-    /// \param data A string of the entire product data.
-    /// \return The product ID as a string.
-    std::string DataManager::GetID(const std::string& data) const {
-    return productData.ProductData(data).at(0);
-    }
-
     /// \summary Finds a product by ID.
     /// \param ID A string representing the ID of the product you want to find.
     /// \param sendMessage (Optional; Default is True) A boolean for whether or not to output any message for not finding the product.
     /// \return A string for the product info.
-    std::string DataManager::Search(const std::string &ID, bool sendMessage) const {
+    std::vector<std::string> DataManager::Search(const std::string& ID, const std::string& name, const string& price, const std::string& category , bool sendMessage) const {
+        std::vector<std::string> result;
+
         for (std::string product : dataArray) {
-            if (GetID(product) == ID) {
-                return product;
+            if (!ID.empty() && productData.ProductData(product).at(0) == ID) {
+                result.push_back(product);
+            }
+
+            if (!name.empty() && productData.ProductData(product).at(1).find(name) != std::string::npos) {
+                result.push_back(product);
+            }
+
+            if (!price.empty() && productData.ProductData(product).at(2) == price) {
+                result.push_back(product);
+            }
+            if (!category.empty() && productData.ProductData(product).at(3) == category) {
+                result.push_back(product);
             }
         }
 
-        if (sendMessage) {
-            std::cout << "Product with ID: " << ID << " could not be found." << std::endl;
+        if (sendMessage && result.empty()) {
+            if (!ID.empty()) {
+                std::cout << "Product with ID: " << ID << " could not be found." << std::endl;
+            }
+
+            if (!name.empty()) {
+                std::cout << "Product(s) with name: " << name << " could not be found." << std::endl;
+            }
+
+            if (!price.empty()) {
+                std::cout << "Product(s) with price: " << price << " could not be found." << std::endl;
+
+            }
+            if (!category.empty()) {
+                std::cout << "Product(s) with category: " << category << " could not be found." << std::endl;
+
+            }
+            result.push_back("");
         }
-        return "";
+
+        return result;
     }
 
     /// Finds a product by ID.
     /// \param ID A number representing the ID of the product you want to find
     /// \param sendMessage (Optional; Default is True) A boolean for whether or not to output any message for not finding the product.
     /// \return A string for the product info.
-    std::string DataManager::Search(const int &ID, bool sendMessage) const {
-        /*for (std::string product : dataArray) {
-            if (GetID(product) == std::to_string(ID)) {
-                return product;
-            }
-        }
-
-        if (sendMessage == true) {
-            std::cout << "Product with ID: " << ID << " could not be found." << std::endl;
-        }
-        return "";*/
-
-        return Search(std::to_string(ID), sendMessage); // Yea, I'm lazy.
-    }
-
-    ///
-    /// \param ID
-    /// \param sendMessage
-    /// \return
-    int DataManager::SearchI(const std::string &ID, bool sendMessage) const {
-        auto it = std::find(dataArray.begin(), dataArray.end(), Search(ID));
-
-        if (it != dataArray.end()) {
-            int index = std::distance(dataArray.begin(), it);
-            return index;
-        }
-
-        if (sendMessage) {
-            std::cout << "Product with ID: " << ID << " could not be found." << std::endl;
-        }
-        return -1;
-    }
-
-    ///
-    /// \param ID
-    /// \param sendMessage
-    /// \return
-    int DataManager::SearchI(const int &ID, bool sendMessage) const {
-        /*auto it = std::find(dataArray.begin(), dataArray.end(), Search(ID));
-
-        if (it != dataArray.end()) {
-            int index = std::distance(dataArray.begin(), it);
-            return index;
-        }
-
-        if (sendMessage) {
-            std::cout << "Product with ID: " << ID << " could not be found." << std::endl;
-        }
-        return -1;*/
-
-        return SearchI(std::to_string(ID));
+    std::vector<std::string> DataManager::Search(const int& ID, const std::string& name, const float& price, const std::string& category, bool sendMessage) const {
+        return Search(ID!= -1? std::to_string(ID) : "",name ,price >= 0.0 ? std::to_string(price) : "", category, sendMessage); // Yea, I'm lazy.
     }
 
     /// \summary Adds new products into the vector array.
     /// \param newData A string that holds all the product info.
     void DataManager::Insert(const std::string& newProduct) {
-        std::string id = GetID(newProduct);
-        std::string product = Search(id, false);
+        std::string id = productData.ProductData(newProduct).at(0);
+        std::vector<std::string> product = Search(id,"", "", "", false);
 
         if (!product.empty()) {
             std::cout << "Product with ID: " << id << " is already in the array." << std::endl;
@@ -157,7 +128,7 @@ public:
         }
 
         dataArray.push_back(newProduct);
-        std::cout << "Product ID: " << GetID(dataArray.back()) << " has been successfully added." << std::endl;
+        std::cout << "Product ID: " << productData.ProductData(dataArray.back()).at(0) << " has been successfully added." << std::endl;
     }
 
     /// \summary Adds new products into the vector array (Overloaded).
@@ -166,7 +137,7 @@ public:
     /// \param price A string of the product price.
     /// \param category A string of the product category.
     void DataManager::Insert(const int &ID, const std::string &name, const float &price, const std::string &category) {
-        std::string product = Search(std::to_string(ID), false);
+        std::vector<std::string> product = Search(std::to_string(ID),"", "", "", false);
 
         if (!product.empty()) {
             std::cout << "Product with ID: " << ID << " is already in the array." << std::endl;
@@ -184,13 +155,13 @@ public:
     /// \summary Deletes the product by ID.
     /// \param ID ID of the product to be deleted.
     void DataManager::Delete(const std::string& ID) {
-        std::string product = Search(ID);
+        std::vector<std::string> product = Search(ID,"", "", "");
 
         if (product.empty()) {
             return;
         }
 
-        auto index = std::find(dataArray.begin(), dataArray.end(),product);
+        auto index = std::find(dataArray.begin(), dataArray.end(),product.front());
 
         dataArray.erase(index);
         std::cout << "Product with ID: " << ID << " has been successfully deleted." << std::endl;
@@ -201,18 +172,18 @@ public:
     /// \param ID A string representing the ID of the product to change.
     /// \param newData The new data of the product.
     void DataManager::Update(const std::string& ID, const std::string& newData) {
-        if (ID != GetID(newData)) {
+        if (ID != productData.ProductData(newData).at(0)) {
             std::cerr << std::endl << "The product ID of the new data does not match the ID you want to find." << std::endl;
             exit(-1);
         }
 
-        std::string product = Search(ID);
+        std::vector<std::string> product = Search(ID);
         if (product.empty()) {
             return;
         }
 
-        auto index = std::find(dataArray.begin(), dataArray.end(), product);
-        std::replace(dataArray.begin(), dataArray.end(), product, newData);
+        auto index = std::find(dataArray.begin(), dataArray.end(), product.front());
+        std::replace(dataArray.begin(), dataArray.end(), product.front(), newData);
     }
 
     /// \summary Changes the product info without changing the ID.
@@ -221,12 +192,12 @@ public:
     /// \param newPrice The new price of the product as a float.
     /// \param newCategory The new category of the product.
     void DataManager::Update(const int& ID, const std::string& newName, const float& newPrice, const std::string& newCategory) {
-        std::string product = Search(std::to_string(ID));
+        std::vector<std::string> product = Search(std::to_string(ID));
         if (product.empty() && newName.empty() && newPrice <= 0.0 && newCategory.empty()) {
             return;
         }
 
-        vector<string> productInfo = productData.ProductData(product);
+        vector<string> productInfo = productData.ProductData(product.front());
 
         if (!newName.empty()) {
             productInfo.at(1) = newName;
@@ -246,8 +217,8 @@ public:
                        + productInfo.at(3);
 
 
-        auto index = std::find(dataArray.begin(), dataArray.end(), product);
-        std::replace(dataArray.begin(), dataArray.end(), product, newData);
+        auto index = std::find(dataArray.begin(), dataArray.end(), product.front());
+        std::replace(dataArray.begin(), dataArray.end(), product.front(), newData);
     }
 
     /// \summary Sorts the array using quick sort
@@ -308,6 +279,10 @@ int main() {
     dataManager.Update(newProdID, "", -1.0, rcPlaneCategory);
     dataManager.Display();
 
+    cout << endl << "Searching for product named: Sir Poops-A-Lot." << endl;
+    cout << "--------------------------------------------------------" << endl;
+    cout << "Product #" << dataManager.Search(-1, "Sir Poops-A-Lot").front() << endl;
+
     cout << endl << "Deleting " << dataManager.Product().ProductData(newProduct).at(1) << "." << endl;
     cout << "--------------------------------------------------------" << endl;
     dataManager.Delete(dataManager.Product().ProductData(newProduct).front());
@@ -319,7 +294,7 @@ int main() {
 
     cout << endl << "Searching for product ID: 96314." << endl;
     cout << "--------------------------------------------------------" << endl;
-    cout << "Product #" << dataManager.SearchI(96314) << ": " << dataManager.Search(96314) << endl;
+    cout << "Product #" << dataManager.Search(96314).front() << endl;
 
     Timer timer;
 
