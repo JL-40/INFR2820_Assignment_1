@@ -27,10 +27,10 @@ public:
     int SearchI(const std::string& ID, bool sendMessage = true) const;
     int SearchI(const int& ID, bool sendMessage = true) const;
     void Insert(const std::string& newProduct);
-    void Insert(const int& ID, const std::string& name = "", const float& price = 0.0, const std::string& category = "");
+    void Insert(const int& ID, const std::string& name, const float& price, const std::string& category);
     void Delete(const std::string& ID);
     void Update(const std::string& ID, const std::string& newData);
-    void Update(const int& ID, const std::string& newName = "", const float& newPrice = 0.0, const std::string& newCategory = "");
+    void Update(const int& ID, const std::string& newName = "", const float& newPrice = -1.0, const std::string& newCategory = "");
     void Sort(int section, bool ascending = true);
 };
 
@@ -57,8 +57,10 @@ public:
     /// \summary Displays the product.
     void DataManager::Display() const
     {
+        int i = 1;
         for(const std::string& data : dataArray) {
-            std::cout << data << std::endl;
+            std::cout << i << ". " << data << std::endl;
+            i++;
         }
     }
 
@@ -230,7 +232,7 @@ public:
             productInfo.at(1) = newName;
         }
 
-        if (newPrice > 0.0) {
+        if (newPrice >= 0.0) {
             productInfo.at(2) = to_string(newPrice);
         }
 
@@ -273,6 +275,12 @@ int main() {
     cout << "--------------------------------------------------------" << endl;
     dataManager.Display();
 
+    string dupProduct = "22806, Smartwatch VVFNT, 203.55, Electronics"; // #16
+    cout << endl << "Inserting duplicated product: " << dupProduct<< "." << endl;
+    cout << "--------------------------------------------------------" << endl;
+    dataManager.Insert(dupProduct);
+    //dataManager.Display();
+
     string newProduct = "42069, Sir Poops-A-Lot SHTFX, 69.69, Electronics";
     cout << endl << "Inserting new product: " << newProduct << "." << endl;
     cout << "--------------------------------------------------------" << endl;
@@ -297,7 +305,7 @@ int main() {
     string rcPlaneCategory = "Toys";
     cout << endl << "Updating " << newProdName << "." << endl;
     cout << "--------------------------------------------------------" << endl;
-    dataManager.Update(newProdID, "", 0.0, rcPlaneCategory);
+    dataManager.Update(newProdID, "", -1.0, rcPlaneCategory);
     dataManager.Display();
 
     cout << endl << "Deleting " << dataManager.Product().ProductData(newProduct).at(1) << "." << endl;
